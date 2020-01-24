@@ -1,9 +1,8 @@
 using System;
-using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace SuperApp.Server
+namespace SuperApp.Client
 {
     public class ChatQueue
     {
@@ -13,7 +12,7 @@ namespace SuperApp.Server
         {
             _incomingMessage = Channel.CreateUnbounded<Chat>();
         }
-        public bool TrySendMessage(out Chat message)
+        public bool TryReceiveMessage(out Chat message)
         {
             if (_incomingMessage.Reader.TryRead(out message))
             {

@@ -3,58 +3,86 @@ using SuperApp;
 using Grpc.Core;
 using Grpc.Net.Client;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading;
+using System.Net.Http;
 
 namespace SuperApp.Client
 {
     class Program
     {
+        private static List<Chat> Chats = new List<Chat>();
         static async Task Main(string[] args)
         {
             var channel = GrpcChannel.ForAddress("https://localhost:50051");
-            var client = new Chatter.ChatterClient(channel);
+
+            var Client = new Chatter.ChatterClient(channel);
+
             Console.WriteLine("Client created");
-            Console.WriteLine("Username: ");
-            var userName = Console.ReadLine();
+            Console.Write("Username: ");
+            var User = Console.ReadLine();
 
-            // while(true){
-            //     var message = Console.ReadLine();
-                
-            //     if(message == "exit"){
-            //         break;
-            //     }
+            var message = new Chat()
+            {
+                User = User,
+                Message = "I has entered the building!"
+            };
 
-            // }
-
-            using (var call = client.sendMessage())
+            using (var call = Client.sendMessage())
             {
                 var responseTask = Task.Run(async () =>
                 {
-                    await foreach (var message in call.ResponseStream.ReadAllAsync())
+                    while (await call.ResponseStream.MoveNext())
                     {
-                        Console.WriteLine($"{message.User}: {message.Message}");
+                        Chats.Add(call.ResponseStream.Current);
+                        Console.Clear();
+                        foreach (var chat in Chats)
+                        {
+                            Console.WriteLine($"{message.User}: {message.Message}");
+                        }
                     }
                 });
 
-                while (true)
+                await call.RequestStream.WriteAsync(message);
+
+                while (message.Message != string.Empty)
                 {
-                    var message = Console.ReadLine();
-                    
-                    if(message == "exit"){
-                        break;
-                    }
-                    await call.RequestStream.WriteAsync(new Chat(){User = userName, Message = message});
-                    // await call .RequestStream.WriteAsync(new Chat() {
-                    //     message = result;
-                    // };
+                    Console.Write("Send: ");
+                    message.Message = Console.ReadLine();
+                    await call.RequestStream.WriteAsync(message);
                 }
 
                 Console.WriteLine("Disconnecting");
                 await call.RequestStream.CompleteAsync();
-                await responseTask;
             }
 
             Console.WriteLine("Disconnected. Press any key to exit.");
             Console.ReadKey();
         }
+
+        private static Task ReceiveMessageHandler(Chat arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        // private static async Task MessageRecievedHandler(Chat message)
+        // {
+        //     Chats.Add(message);
+        //     Console.Clear();
+        //     foreach (var msg in Chats)
+        //     {
+        //         Console.WriteLine($"{message.User}: {message.Message}");
+        //     }
+
+        //     Console.Write("Send: ");
+        //     var sendMessage = Console.ReadLine();
+        //     await SendMessage(message);
+        // }
+
+        // private static async Task SendMessage(Chat message)
+        // {
+        //     await Call.RequestStream.WriteAsync(message);
+
+        // }
     }
 }
