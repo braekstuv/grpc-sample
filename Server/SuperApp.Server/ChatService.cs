@@ -8,7 +8,14 @@ namespace SuperApp.Server
     public class ChatService : Chatter.ChatterBase
     {
         private static readonly ChatQueue _queue = new ChatQueue();
-        public async override Task sendMessage(IAsyncStreamReader<Chat> requestStream, IServerStreamWriter<Chat> responseStream, Grpc.Core.ServerCallContext context)
+
+        public override Task<HelloWorldResult> HelloWorld(HelloWorldRequest request, ServerCallContext context){
+            return Task.FromResult(new HelloWorldResult(){
+                Message = $"Hello {request.Name}!"
+            });
+        }
+
+        public async override Task SendMessage(IAsyncStreamReader<Chat> requestStream, IServerStreamWriter<Chat> responseStream, Grpc.Core.ServerCallContext context)
         {
             Console.WriteLine("Incoming call.");
             _queue.Changed += SendMessageHandler;

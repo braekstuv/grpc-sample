@@ -3,9 +3,17 @@ syntax = "proto3";
 package SuperApp;
 
 service Chatter {
-    rpc sendMessage (stream Chat) returns (stream Chat){}
+    rpc SendMessage (stream Chat) returns (stream Chat){}
+    rpc HelloWorld (HelloWorldRequest) returns (HelloWorldResult){}
 }
 
+message HelloWorldRequest{
+    string name = 1;
+}
+
+message HelloWorldResult{
+    string message = 1;
+}
 
 message Chat{
     string user = 1;

@@ -12,11 +12,11 @@ namespace SuperApp.Client
     class Program
     {
         private static List<Chat> Chats = new List<Chat>();
-        static async Task Main(string[] args)
-        {
-            var channel = GrpcChannel.ForAddress("https://localhost:50051");
 
-            var Client = new Chatter.ChatterClient(channel);
+        static async Task Main(string[] args){
+            Channel channel = new Channel("127.0.0.1:50051", ChannelCredentials.Insecure);
+            var client = new Chatter.ChatterClient(channel);
+
 
             Console.WriteLine("Client created");
             Console.Write("Username: ");
@@ -28,7 +28,7 @@ namespace SuperApp.Client
                 Message = "I has entered the building!"
             };
 
-            using (var call = Client.sendMessage())
+            using (var call = client.SendMessage())
             {
                 var responseTask = Task.Run(async () =>
                 {
@@ -58,7 +58,19 @@ namespace SuperApp.Client
 
             Console.WriteLine("Disconnected. Press any key to exit.");
             Console.ReadKey();
+
+            Console.ReadKey();
         }
+
+
+
+        // static async Task Main(string[] args)
+        // {
+        //     var channel = GrpcChannel.ForAddress("https://localhost:50051");
+
+        //     var Client = new Chatter.ChatterClient(channel);
+
+        // }
 
         private static Task ReceiveMessageHandler(Chat arg)
         {
